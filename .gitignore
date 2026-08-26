@@ -1,0 +1,20 @@
+# Runtime data and credentials
+relay.db
+relay.db-*
+backups/
+*.sqlite
+*.sqlite-*
+auth.json
+.env
+.env.*
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local tooling state
+.omx/
+
+# Local preview configuration can contain development credentials
+.claude/
