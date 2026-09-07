@@ -39,6 +39,7 @@ def test_chat_completions_usage_compatibility(db):
 def test_standard_api_equivalent_pricing(db):
     million = 1_000_000
     expected = {
+        "gpt-6-astra": 51.0,
         "gpt-5.6-sol": 20.4,
         "gpt-5.6-terra": 12.2,
         "gpt-5.6-luna": 1.22,

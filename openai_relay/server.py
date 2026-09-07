@@ -59,6 +59,33 @@ def get_upstream_credentials():
     return UPSTREAM_API_KEY, None
 
 
+def _shorten_codex_input_id(value):
+    return "rs_" + hashlib.sha256(value.encode("utf-8")).hexdigest()[:61]
+
+
+def prepare_codex_request(request_data):
+    """Normalize only fields unsupported by the Codex backend."""
+    prepared = dict(request_data)
+    prepared.pop("max_output_tokens", None)
+    prepared["store"] = False
+
+    input_items = request_data.get("input")
+    if isinstance(input_items, list):
+        replacements = {
+            item["id"]: _shorten_codex_input_id(item["id"])
+            for item in input_items
+            if isinstance(item, dict)
+            and isinstance(item.get("id"), str)
+            and len(item["id"]) > 64
+            and "encrypted_content" not in item
+        }
+        prepared["input"] = [dict(item) if isinstance(item, dict) else item for item in input_items]
+        for item in prepared["input"]:
+            if isinstance(item, dict) and item.get("id") in replacements:
+                item["id"] = replacements[item["id"]]
+    return prepared
+
+
 def ts():
     return time.strftime("%H:%M:%S")
 
@@ -504,7 +531,7 @@ class OpenAIRelayHandler(http.server.BaseHTTPRequestHandler):
                     self._send_json(400, {"error": {"message": "request body must be a JSON object"}})
                     return
                 if UPSTREAM_AUTH_MODE == "codex_auth_file":
-                    request_data["store"] = False
+                    request_data = prepare_codex_request(request_data)
                     if not request_data.get("stream"):
                         self._send_json(400, {"error": {"message": "Codex upstream requires stream=true"}})
                         return

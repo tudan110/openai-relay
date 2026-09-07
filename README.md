@@ -39,7 +39,7 @@ CODEX_AUTH_FILE=/home/ubuntu/.codex/auth.json
 
 统计页会每 60 秒通过服务器端的已登录 Codex 会话查询一次上游账号额度，并只显示周期名称、剩余比例和重置时间。该额度由所有 relay 用户共享；原始上游响应、access token、account ID 不会进入浏览器、SQLite 或日志。上游不可用或返回格式变化时，页面会明确显示额度暂不可用，不会根据 relay 用量推测额度。
 
-Codex 模式只代理已确认支持的 Responses 接口；上游要求 `input` 使用列表、`store=false` 且 `stream=true`，因此 relay 会自动设置 `store=false`，对非流式请求返回 400，避免错误地把 SSE 当成 JSON。它不把 Codex 登录态冒充标准 OpenAI API key，也不绕过上游登录、订阅、速率限制或风控控制。
+Codex 模式只代理已确认支持的 Responses 接口；上游要求 `input` 使用列表、`store=false` 且 `stream=true`，因此 relay 会自动设置 `store=false`，并移除 Claude Desktop 等 OpenAI 兼容客户端可能附带、但 Codex backend 不支持的 `max_output_tokens`。对非流式请求返回 400，避免错误地把 SSE 当成 JSON。它不把 Codex 登录态冒充标准 OpenAI API key，也不绕过上游登录、订阅、速率限制或风控控制。
 
 ### 标准 OpenAI API key
 

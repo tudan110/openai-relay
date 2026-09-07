@@ -15,6 +15,7 @@ DB_PATH = os.environ.get("RELAY_DB", os.path.join(_ROOT, "relay.db"))
 # USD per 1,000,000 tokens. Keep this table explicit because provider pricing
 # changes; unknown models use the configured fallback and remain estimates.
 PRICING = {
+    "gpt-6-astra": {"in": 10.0, "out": 50.0, "cw": 12.5, "cr": 1.0},
     "gpt-5.6-sol": {"in": 4.0, "out": 20.0, "cw": 0.0, "cr": 0.40},
     "gpt-5.6-terra": {"in": 2.0, "out": 12.0, "cw": 0.0, "cr": 0.20},
     "gpt-5.6-luna": {"in": 0.20, "out": 1.20, "cw": 0.0, "cr": 0.02},
