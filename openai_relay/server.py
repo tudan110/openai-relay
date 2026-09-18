@@ -1291,7 +1291,7 @@ def render_stats_html(scope_username, date_range="period"):
                  f"<span class=mcost>{money(cv)}</span>")
         if bold:
             inner = f"<b>{inner}</b>"
-        return f"<td class=num>{inner}</td>"
+        return f"<td class=num data-tok='{int(tv or 0)}' data-cost='{float(cv or 0)}'>{inner}</td>"
 
     max_cost = max((r["cost"] or 0 for r in per_user), default=1)
 
@@ -1657,10 +1657,21 @@ def render_stats_html(scope_username, date_range="period"):
         "document.querySelectorAll('.metricbox').forEach(function(b){"
         "var t=b.querySelector('.mb-tok'),c=b.querySelector('.mb-cost');"
         "if(!t||!c)return;"
+        "function sortRows(metric){"
+        "var body=b.querySelector('tbody');if(!body)return;"
+        "var rows=Array.prototype.slice.call(body.querySelectorAll('tr'));"
+        "var sortable=rows.filter(function(r){return r.querySelector('.ulink');});"
+        "sortable.sort(function(a,z){"
+        "var ac= a.querySelector('td:last-child'),zc=z.querySelector('td:last-child');"
+        "return Number(zc.dataset[metric]||0)-Number(ac.dataset[metric]||0);"
+        "});"
+        "sortable.forEach(function(r){body.appendChild(r);});"
+        "}"
         "b.classList.add('show-cost');"
-        "t.onclick=function(){b.classList.remove('show-cost');"
+        "sortRows('cost');"
+        "t.onclick=function(){b.classList.remove('show-cost');sortRows('tok');"
         "t.classList.add('active');c.classList.remove('active');};"
-        "c.onclick=function(){b.classList.add('show-cost');"
+        "c.onclick=function(){b.classList.add('show-cost');sortRows('cost');"
         "c.classList.add('active');t.classList.remove('active');};"
         "});})();</script>"
     )
