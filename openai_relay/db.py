@@ -15,11 +15,15 @@ DB_PATH = os.environ.get("RELAY_DB", os.path.join(_ROOT, "relay.db"))
 # USD per 1,000,000 tokens. Keep this table explicit because provider pricing
 # changes; unknown models use the configured fallback and remain estimates.
 PRICING = {
-    "gpt-6-astra": {"in": 10.0, "out": 50.0, "cw": 12.5, "cr": 1.0},
+    "gpt-6-astra": {"in": 10.0, "out": 50.0, "cw": 0.0, "cr": 1.0},
+    "gpt-6-sol": {"in": 2.0, "out": 10.0, "cw": 0.0, "cr": 0.20},
+    "gpt-6-luna": {"in": 0.10, "out": 0.50, "cw": 0.0, "cr": 0.01},
     "gpt-5.6-sol": {"in": 4.0, "out": 20.0, "cw": 0.0, "cr": 0.40},
     "gpt-5.6-terra": {"in": 2.0, "out": 12.0, "cw": 0.0, "cr": 0.20},
     "gpt-5.6-luna": {"in": 0.20, "out": 1.20, "cw": 0.0, "cr": 0.02},
+    "gpt-5.5": {"in": 5.0, "out": 30.0, "cw": 0.0, "cr": 0.50},
     "gpt-5.3-codex": {"in": 1.75, "out": 14.0, "cw": 0.0, "cr": 0.175},
+    "gpt-5.2": {"in": 1.75, "out": 14.0, "cw": 0.0, "cr": 0.175},
     "gpt-4o": {"in": 2.50, "out": 10.0, "cw": 0.0, "cr": 1.25},
     "gpt-4.1": {"in": 2.0, "out": 8.0, "cw": 0.0, "cr": 0.50},
 }

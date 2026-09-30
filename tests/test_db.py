@@ -36,17 +36,25 @@ def test_chat_completions_usage_compatibility(db):
     assert db.parse_nonstream_usage(body) == (7, 8, 0, 2)
 
 
-def test_standard_api_equivalent_pricing(db):
+def test_enterprise_codex_standard_pricing(db):
     million = 1_000_000
     expected = {
         "gpt-6-astra": 51.0,
+        "gpt-6-sol": 10.2,
+        "gpt-6-luna": 0.51,
         "gpt-5.6-sol": 20.4,
         "gpt-5.6-terra": 12.2,
         "gpt-5.6-luna": 1.22,
+        "gpt-5.5": 30.5,
         "gpt-5.3-codex": 14.175,
+        "gpt-5.2": 14.175,
     }
     for model, cost in expected.items():
         assert db.compute_cost(model, million, million, 0, million) == cost
+
+
+def test_codex_astra_cache_writes_are_not_billed(db):
+    assert db.compute_cost("gpt-6-astra", 0, 0, 1_000_000, 0) == 0
 
 
 def test_pricing_prefix_and_unknown_model(db):

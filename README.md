@@ -86,16 +86,21 @@ python3 manage.py enable alice
 python3 manage.py report --days 7
 ```
 
-每日 token、每日请求和 RPM 限额均可在后台或 CLI 设置；`0` 表示不限。统计中的费用是按 OpenAI Standard API 价格计算的 API 等价估算，不代表 Codex 或 ChatGPT 订阅的实际扣费。当前支持以下价格（USD / 1M tokens）：
+每日 token、每日请求和 RPM 限额均可在后台或 CLI 设置；`0` 表示不限。统计中的费用按符合条件的 ChatGPT Enterprise Token 计费协议中 Work/Codex 标准费率估算，不代表 API 账单或其他 Codex、ChatGPT 套餐的实际扣费。当前支持以下价格（USD / 1M tokens）：
 
 | 模型 | 输入 | 缓存输入 | 输出 |
 |---|---:|---:|---:|
+| `gpt-6-astra` | 10.00 | 1.00 | 50.00 |
+| `gpt-6-sol` | 2.00 | 0.20 | 10.00 |
+| `gpt-6-luna` | 0.10 | 0.01 | 0.50 |
 | `gpt-5.6-sol` | 4.00 | 0.40 | 20.00 |
 | `gpt-5.6-terra` | 2.00 | 0.20 | 12.00 |
 | `gpt-5.6-luna` | 0.20 | 0.02 | 1.20 |
+| `gpt-5.5` | 5.00 | 0.50 | 30.00 |
 | `gpt-5.3-codex` | 1.75 | 0.175 | 14.00 |
+| `gpt-5.2` | 1.75 | 0.175 | 14.00 |
 
-价格来源：[OpenAI API Pricing](https://developers.openai.com/api/docs/pricing)。费用只根据 relay 实际解析到的输入、输出和缓存输入 token 估算；当前上游 usage 没有独立的缓存写入 token 字段，因此缓存写入按 0 记录。未配置价格的模型费用显示为 0。缓存输入 token 是输入总 token 的子集，按缓存输入价格计费，不会重复按普通输入价格计费。
+价格来源：[ChatGPT Enterprise Token 费率卡](https://help.openai.com/zh-hans-cn/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing)。费用根据 relay 实际解析到的输入、输出、缓存输入和缓存写入 token 计算；GPT-6 Astra 的 Codex cache write 按官方费率卡计为 0。费率卡没有列出 `gpt-reserve`，因此该模型仍按未知模型处理并显示 $0。缓存输入 token 是输入总 token 的子集，不会重复按普通输入价格计费。当前按 Standard 模式估算，不包含 Fast、长上下文或区域处理等额外费率。
 
 ### 重算历史费用
 
