@@ -15,6 +15,7 @@ import os
 import sys
 import secrets
 import threading
+import re
 from datetime import datetime, timezone, timedelta
 from html import escape
 from urllib.parse import urlparse, parse_qs, quote
@@ -50,6 +51,11 @@ MODEL_LIST = tuple(
     model.strip() for model in os.environ.get("RELAY_MODELS", "gpt-5.6-sol").split(",")
     if model.strip()
 )
+CODEX_CLIENT_VERSION = os.environ.get("CODEX_CLIENT_VERSION", "1.0.0")
+MODEL_CACHE_TTL = int(os.environ.get("RELAY_MODEL_CACHE_TTL", "300"))
+_model_cache = {"data": None, "ts": 0.0}
+_model_cache_lock = threading.Lock()
+_MODEL_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{1,79}$")
 
 
 def get_upstream_credentials():
@@ -57,6 +63,75 @@ def get_upstream_credentials():
         credentials = relay_auth.get_credentials()
         return credentials.access_token, credentials.account_id
     return UPSTREAM_API_KEY, None
+
+
+def normalize_upstream_models(payload):
+    """Extract only model IDs from the upstream model collection."""
+    if not isinstance(payload, dict):
+        return None
+    models = payload.get("models")
+    if not isinstance(models, list):
+        models = payload.get("data")
+    if not isinstance(models, list):
+        return None
+    ids = []
+    for item in models:
+        if isinstance(item, str):
+            candidates = [item]
+        elif isinstance(item, dict):
+            candidates = [item.get(key) for key in ("id", "slug", "model", "model_id", "model_slug")]
+        else:
+            candidates = []
+        for value in candidates:
+            if isinstance(value, str) and _MODEL_ID_RE.fullmatch(value) and value not in ids:
+                ids.append(value)
+                break
+    return tuple(ids) or None
+
+
+def fetch_upstream_models():
+    if UPSTREAM_AUTH_MODE != "codex_auth_file":
+        return None
+    try:
+        token, account_id = get_upstream_credentials()
+        conn = make_https_conn_via_proxy()
+        try:
+            path = "/backend-api/codex/models?client_version=" + quote(CODEX_CLIENT_VERSION, safe="")
+            conn.request("GET", path, headers={
+                "Authorization": f"Bearer {token}",
+                "ChatGPT-Account-Id": account_id,
+                "OpenAI-Beta": "codex-1",
+                "originator": "Codex Desktop",
+                "Accept": "application/json",
+                "Host": UPSTREAM_HOST,
+            })
+            resp = conn.getresponse()
+            if resp.status != 200:
+                return None
+            return normalize_upstream_models(json.loads(resp.read()))
+        finally:
+            conn.close()
+    except (relay_auth.CredentialError, OSError, ValueError, json.JSONDecodeError,
+            http.client.HTTPException):
+        return None
+
+
+def get_available_models():
+    if UPSTREAM_AUTH_MODE != "codex_auth_file":
+        return MODEL_LIST
+    now = time.time()
+    if _model_cache["data"] is not None and now - _model_cache["ts"] < MODEL_CACHE_TTL:
+        return _model_cache["data"]
+    with _model_cache_lock:
+        if _model_cache["data"] is not None and time.time() - _model_cache["ts"] < MODEL_CACHE_TTL:
+            return _model_cache["data"]
+        models = fetch_upstream_models()
+        if models:
+            # Keep explicitly configured relay models visible even when the
+            # upstream model catalog is stale or incomplete.
+            _model_cache["data"] = tuple(dict.fromkeys((*models, *MODEL_LIST)))
+            _model_cache["ts"] = time.time()
+        return _model_cache["data"] or MODEL_LIST
 
 
 def _shorten_codex_input_id(value):
@@ -240,7 +315,7 @@ class OpenAIRelayHandler(http.server.BaseHTTPRequestHandler):
                     "object": "model",
                     "created": 0,
                     "owned_by": "openai",
-                } for model in MODEL_LIST],
+                } for model in get_available_models()],
             })
             return True
         if path == "/static/echarts.min.js":
