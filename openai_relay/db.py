@@ -16,6 +16,7 @@ DB_PATH = os.environ.get("RELAY_DB", os.path.join(_ROOT, "relay.db"))
 # changes; unknown models use the configured fallback and remain estimates.
 PRICING = {
     "gpt-6-astra": {"in": 10.0, "out": 50.0, "cw": 0.0, "cr": 1.0},
+    "gpt-6.1-sol": {"in": 2.0, "out": 10.0, "cw": 0.0, "cr": 0.10},
     "gpt-6-sol": {"in": 2.0, "out": 10.0, "cw": 0.0, "cr": 0.20},
     "gpt-6-luna": {"in": 0.10, "out": 0.50, "cw": 0.0, "cr": 0.01},
     "gpt-5.6-sol": {"in": 4.0, "out": 20.0, "cw": 0.0, "cr": 0.40},

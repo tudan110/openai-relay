@@ -19,7 +19,7 @@ module.exports = {
         OPENAI_UPSTREAM_HOST: "chatgpt.com",
         OPENAI_UPSTREAM_PREFIX: "/backend-api/codex",
         CODEX_AUTH_FILE: "/home/ubuntu/.codex/auth.json",
-        RELAY_MODELS: "gpt-5.6-sol,gpt-5.6-terra,gpt-5.6-luna,gpt-5.5,gpt-5.4,gpt-5.4-mini,gpt-5.3-codex-spark,codex-auto-review",
+        RELAY_MODELS: "gpt-6-sol,gpt-6-luna,gpt-5.6-sol,gpt-5.6-terra,gpt-5.6-luna,gpt-5.5,gpt-5.4,gpt-5.4-mini,gpt-5.3-codex-spark,codex-auto-review",
         TZ: "Asia/Shanghai"
       }
     }

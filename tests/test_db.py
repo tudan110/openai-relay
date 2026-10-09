@@ -40,6 +40,7 @@ def test_enterprise_codex_standard_pricing(db):
     million = 1_000_000
     expected = {
         "gpt-6-astra": 51.0,
+        "gpt-6.1-sol": 10.1,
         "gpt-6-sol": 10.2,
         "gpt-6-luna": 0.51,
         "gpt-5.6-sol": 20.4,
@@ -51,6 +52,8 @@ def test_enterprise_codex_standard_pricing(db):
     }
     for model, cost in expected.items():
         assert db.compute_cost(model, million, million, 0, million) == cost
+
+    assert db.compute_cost("gpt-6.1-sol", million, million, 0, 0) == 12.0
 
 
 def test_codex_astra_cache_writes_are_not_billed(db):
